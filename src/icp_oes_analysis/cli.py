@@ -7,6 +7,7 @@ import typer
 from icp_oes_analysis.analysis import analyze_experiment
 from icp_oes_analysis.io import load_experiment
 from icp_oes_analysis.visualization import plot_results
+from icp_oes_analysis.extension import extension
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
@@ -49,7 +50,7 @@ def analyze(
     print("=" * 80 + "\n")
 
     # Create plot
-    fig = plot_results(exp, exp.config)
+    fig = plot_results(exp)
 
     # Save outputs
     if output_dir:
@@ -73,6 +74,9 @@ def analyze(
         plt.close(fig)
 
     print("✓ Analysis complete!")
+
+    print("Beginning extension")
+    extension(exp)
 
 
 if __name__ == "__main__":

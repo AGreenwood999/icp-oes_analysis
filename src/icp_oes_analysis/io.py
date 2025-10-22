@@ -17,8 +17,6 @@ def _get_column_names(data_file: Path, separator: str = "\t"):
         raw_ele_wave_data = fid.readline().strip().split(separator)
 
     element_wavelength = [ele_wave[:6] for ele_wave in raw_ele_wave_data]
-    element_wavelength.insert(0, "")
-    element_wavelength.insert(0, "")
 
     return [
         f"{dtype} {ele_wave}".strip()
@@ -41,13 +39,14 @@ def load_experiment(data_file: Path, config_file: Path) -> Experiment:
 
     # Load data - simplified column naming
     # Just keep it simple: read with proper headers from row 4
+    separator = config["io"].get("separator", "\t")
     raw_data = (
         pl.scan_csv(
             data_file,
-            separator=config["io"].get("separator", "\t"),
+            separator=separator,
             skip_rows=4,  # Skip header rows
             has_header=False,
-            new_columns=_get_column_names(data_file),
+            new_columns=_get_column_names(data_file, separator),
         )
         .drop(config["io"].get("drop_cols", ["^column_.*$"]))
         .filter(

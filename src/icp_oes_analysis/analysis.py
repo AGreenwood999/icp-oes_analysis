@@ -65,7 +65,11 @@ def _fit_wavelength(exp: Experiment, wavelength: int) -> CalibrationFit:
         .select(["Sample", pl.col(f"Raw.Average Fe {wavelength}").alias("Signal")])
         .with_columns(
             # Extract concentration from sample name (e.g., "STD5" → 5.0)
-            pl.col("Sample").str.slice(3, None).cast(pl.Float64).alias("Concentration")
+            pl.col("Sample")
+            .str.strip_chars()
+            .str.slice(3, None)
+            .cast(pl.Float64)
+            .alias("Concentration")
         )
         .collect()
     )

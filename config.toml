@@ -1,0 +1,66 @@
+[plotting]
+cmap = "tab20c"
+
+[io]
+separator = ";"
+drop_cols = ["^column_.*$", "^ExtCal.*$"]
+drop_rows = "^.*rat.*|.*nitric.*$"
+
+[groups]
+"-2,-1,12" = ["-2,-1,12"]
+"-4,-1,12" = ["-4,-1,12"]
+"-6,-1,12" = ["-6,-1,12"]
+"-8,-1,12" = ["-8,-1,12"]
+"-1,-2,12" = ["-1,-2,12"]
+"-1,-4,12" = ["-1,-4,12"]
+"-1,-6,12" = ["-1,-6,12"]
+"-1,-8,12" = ["-1,-8,12"]
+"-2.1,-2.1,12" = ["-2.1,-2.1,12"]
+"-2.8,-2.8,12" = ["-2.8,-2.8,12"]
+"-4.2,-4.2,12" = ["-4.2,-4.2,12"]
+"-5.6,-5.6,12" = ["-5.6,-5.6,12"]
+"U2025Dc 2637" = ["U2025Dc 2637"]
+"U2025Dd 2657" = ["U2025Dd 2657"]
+"Glycerin control" = ["Glycerin control"]
+"-2,-1,15" = ["-2,-1,15"]
+"-4,-1,15" = ["-4,-1,15"]
+"-6,-1,15" = ["-6,-1,15"]
+"-8,-1,15" = ["-8,-1,15"]
+"-1,-2,15" = ["-1,-2,15"]
+"-1,-4,15" = ["-1,-4,15"]
+"-1,-6,15" = ["-1,-6,15"]
+"-1,-8,15" = ["-1,-8,15"]
+"-2.1,-2.1,15" = ["-2.1,-2.1,15"]
+"-2.8,-2.8,15" = ["-2.8,-2.8,15"]
+"-4.2,-4.2,15" = ["-4.2,-4.2,15"]
+"-5.6,-5.6,15" = ["-5.6,-5.6,15"]
+
+
+[dilutions]
+"-2,-1,12" = { V_initial = 18.88, V_digestion = 37.76, V_aliquot = 8.235, V_final = 10 }
+"-4,-1,12" = { V_initial = 18.88, V_digestion = 37.76, V_aliquot = 8.235, V_final = 10 }
+"-6,-1,12" = { V_initial = 18.88, V_digestion = 37.76, V_aliquot = 8.235, V_final = 10 }
+"-8,-1,12" = { V_initial = 18.88, V_digestion = 37.76, V_aliquot = 8.235, V_final = 10 }
+"-1,-2,12" = { V_initial = 18.88, V_digestion = 37.76, V_aliquot = 8.235, V_final = 10 }
+"-1,-4,12" = { V_initial = 18.88, V_digestion = 37.76, V_aliquot = 8.235, V_final = 10 }
+"-1,-6,12" = { V_initial = 18.88, V_digestion = 37.76, V_aliquot = 8.235, V_final = 10 }
+"-1,-8,12" = { V_initial = 18.88, V_digestion = 37.76, V_aliquot = 8.235, V_final = 10 }
+"-2.1,-2.1,12" = { V_initial = 18.88, V_digestion = 37.76, V_aliquot = 8.235, V_final = 10 }
+"-2.8,-2.8,12" = { V_initial = 18.88, V_digestion = 37.76, V_aliquot = 8.235, V_final = 10 }
+"-4.2,-4.2,12" = { V_initial = 18.88, V_digestion = 37.76, V_aliquot = 8.235, V_final = 10 }
+"-5.6,-5.6,12" = { V_initial = 18.88, V_digestion = 37.76, V_aliquot = 8.235, V_final = 10 }
+"U2025Dc 2637" = { V_initial = 4.0, V_digestion = 282.6, V_aliquot = 1.0, V_final = 10 }
+"U2025Dd 2657" = { V_initial = 4.0, V_digestion = 282.6, V_aliquot = 1.0, V_final = 10 }
+"Glycerin control" = { V_initial = 18.88, V_digestion = 37.76, V_aliquot = 8.235, V_final = 10 }
+"-2,-1,15" = { V_initial = 18.88, V_digestion = 37.76, V_aliquot = 8.235, V_final = 10 }
+"-4,-1,15" = { V_initial = 18.88, V_digestion = 37.76, V_aliquot = 8.235, V_final = 10 }
+"-6,-1,15" = { V_initial = 18.88, V_digestion = 37.76, V_aliquot = 8.235, V_final = 10 }
+"-8,-1,15" = { V_initial = 18.88, V_digestion = 37.76, V_aliquot = 8.235, V_final = 10 }
+"-1,-2,15" = { V_initial = 18.88, V_digestion = 37.76, V_aliquot = 8.235, V_final = 10 }
+"-1,-4,15" = { V_initial = 18.88, V_digestion = 37.76, V_aliquot = 8.235, V_final = 10 }
+"-1,-6,15" = { V_initial = 18.88, V_digestion = 37.76, V_aliquot = 8.235, V_final = 10 }
+"-1,-8,15" = { V_initial = 18.88, V_digestion = 37.76, V_aliquot = 8.235, V_final = 10 }
+"-2.1,-2.1,15" = { V_initial = 18.88, V_digestion = 37.76, V_aliquot = 8.235, V_final = 10 }
+"-2.8,-2.8,15" = { V_initial = 18.88, V_digestion = 37.76, V_aliquot = 8.235, V_final = 10 }
+"-4.2,-4.2,15" = { V_initial = 18.88, V_digestion = 37.76, V_aliquot = 8.235, V_final = 10 }
+"-5.6,-5.6,15" = { V_initial = 18.88, V_digestion = 37.76, V_aliquot = 8.235, V_final = 10 }
