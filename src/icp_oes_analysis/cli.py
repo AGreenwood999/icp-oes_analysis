@@ -5,9 +5,9 @@ import matplotlib.pyplot as plt
 import typer
 
 from icp_oes_analysis.analysis import analyze_experiment
+from icp_oes_analysis.extension import extension
 from icp_oes_analysis.io import load_experiment
 from icp_oes_analysis.visualization import plot_results
-from icp_oes_analysis.extension import extension
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
@@ -20,6 +20,7 @@ def analyze(
     config_file: Path,
     output_dir: Path | None = typer.Option(None, "--output", "-o"),
     show_plot: bool = typer.Option(False, "--show", "-s"),
+    run_extension: bool = typer.Option(False, "--extension", "-e"),
 ):
     """
     Analyze ICP-OES data and calculate Fe3O4 mass.
@@ -76,7 +77,9 @@ def analyze(
     print("✓ Analysis complete!")
 
     print("Beginning extension")
-    extension(exp)
+
+    if run_extension:
+        extension(exp)
 
 
 if __name__ == "__main__":

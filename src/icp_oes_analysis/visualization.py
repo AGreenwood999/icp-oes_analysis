@@ -29,14 +29,12 @@ def plot_results(exp: Experiment) -> Figure:
         exp.raw_data.filter(pl.col("Sample").str.starts_with("STD"))
         .filter(~pl.col("Sample").str.ends_with("DNU"))
         .select(
-            [
-                "Sample",
-                pl.col(f"Raw.Average Fe {wavelength}").alias("Signal"),
-                pl.col(f"Raw.STD Fe {wavelength}").alias("Signal_STD"),
-            ]
+            "Sample",
+            Signal=pl.col(f"Raw.Average Fe {wavelength}"),
+            Signal_STD=pl.col(f"Raw.STD Fe {wavelength}"),
         )
         .with_columns(
-            pl.col("Sample").str.slice(3, None).cast(pl.Float64).alias("Concentration")
+            Concentration=pl.col("Sample").str.slice(3, None).cast(pl.Float64)
         )
         .collect()
     )
@@ -71,17 +69,17 @@ def plot_results(exp: Experiment) -> Figure:
     )
 
     # Plot samples
-    for i, (group, samples) in enumerate(exp.config["groups"].items()):
-        x_samples = exp.results.filter(pl.col("Sample").is_in(samples))[
-            "Fe_concentration_mgL"
-        ].to_numpy()
-        y_samples = exp.results.filter(pl.col("Sample").is_in(samples))[
-            "Signal"
-        ].to_numpy()
+    # for i, (group, samples) in enumerate(exp.config["groups"].items()):
+    #     x_samples = exp.results.filter(pl.col("Sample").is_in(samples))[
+    #         "Fe_concentration_mgL"
+    #     ].to_numpy()
+    #     y_samples = exp.results.filter(pl.col("Sample").is_in(samples))[
+    #         "Signal"
+    #     ].to_numpy()
 
-        pc = ax.scatter(x_samples, y_samples, s=100, label=group, color=colors[i])
+    #     pc = ax.scatter(x_samples, y_samples, s=100, label=group, color=colors[i])
 
-        ax.axhline(y_samples.mean(), color=colors[i])
+    #     ax.axhline(y_samples.mean(), color=colors[i])
 
     # Add fit equation
     fit_text = (

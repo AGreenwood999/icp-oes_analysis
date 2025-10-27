@@ -96,6 +96,21 @@ def _fit_wavelength(exp: Experiment, wavelength: int) -> CalibrationFit:
     return CalibrationFit(slope=slope, intercept=intercept, r_squared=r_squared)
 
 
+# Apply dilution factors and calculate total Fe mass
+def get_dilution_factor(exp: Experiment, sample_name: str) -> float:
+    dilution = exp.config["dilutions"].get(sample_name)
+    V_initial = dilution["V_initial"]
+    V_digestion = dilution["V_digestion"]
+    V_aliquot = dilution["V_aliquot"]
+    V_final = dilution["V_final"]
+    return (V_initial * V_aliquot) / (V_digestion * V_final)
+
+
+def get_initial_volume(exp: Experiment, sample_name: str) -> float:
+    dilution = exp.config["dilutions"].get(sample_name)
+    return dilution.get("V_initial", 0.0)
+
+
 def _calculate_sample_masses(
     exp: Experiment, wavelength: int, fit: CalibrationFit
 ) -> pl.DataFrame:
@@ -106,60 +121,37 @@ def _calculate_sample_masses(
         exp.raw_data.filter(~pl.col("Sample").str.starts_with("STD"))
         .filter(~pl.col("Sample").str.contains("blank"))
         .select(
-            [
-                "Sample",
-                pl.col(f"Raw.Average Fe {wavelength}").alias("Signal"),
-                pl.col(f"Raw.STD Fe {wavelength}").alias("Signal_STD"),
-            ]
+            "Sample",
+            Signal=pl.col(f"Raw.Average Fe {wavelength}"),
+            Signal_STD=pl.col(f"Raw.STD Fe {wavelength}"),
         )
-        .collect()
-    )
-
-    # Calculate concentrations from calibration
-    samples = samples.with_columns(
-        [((pl.col("Signal") - fit.intercept) / fit.slope).alias("Fe_concentration_mgL")]
-    )
-
-    # Apply dilution factors and calculate total Fe mass
-    def get_dilution_factor(sample_name: str) -> float:
-        dilution = exp.config["dilutions"].get(sample_name)
-        V_initial = dilution["V_initial"]
-        V_digestion = dilution["V_digestion"]
-        V_aliquot = dilution["V_aliquot"]
-        V_final = dilution["V_final"]
-        return (V_initial * V_aliquot) / (V_digestion * V_final)
-
-    def get_initial_volume(sample_name: str) -> float:
-        dilution = exp.config["dilutions"].get(sample_name)
-        return dilution.get("V_initial", 0.0)
-
-    samples = samples.with_columns(
-        [
-            pl.col("Sample")
-            .map_elements(get_dilution_factor, return_dtype=pl.Float64)
-            .alias("dilution_factor"),
-            pl.col("Sample")
-            .map_elements(get_initial_volume, return_dtype=pl.Float64)
+        # Get iron concentration from calibration curve
+        .with_columns(
+            Fe_concentration_mgL=((pl.col("Signal") - fit.intercept) / fit.slope)
+        )
+        # Put dilution factor and intial volume in dataframe to be used after this
+        .with_columns(
+            dilution_factor=pl.col("Sample").map_elements(
+                lambda x: get_dilution_factor(exp, x), return_dtype=pl.Float64
+            ),
+            initial_volume_mL=pl.col("Sample")
+            .map_elements(
+                lambda x: get_dilution_factor(exp, x), return_dtype=pl.Float64
+            )
             .alias("initial_volume_mL"),
-        ]
-    )
-
-    # Calculate masses
-    samples = samples.with_columns(
-        [
-            # Fe mass (mg) = concentration (mg/L) / dilution_factor * initial_volume (L)
-            (
-                pl.col("Fe_concentration_mgL")
-                / pl.col("dilution_factor")
-                * pl.col("initial_volume_mL")
-                / 1000
-            ).alias("Fe_mass_mg"),
-        ]
-    )
-
-    # Convert Fe → Fe3O4
-    samples = samples.with_columns(
-        [(pl.col("Fe_mass_mg") * FE_TO_FE3O4_RATIO).alias("Fe3O4_mass_mg")]
+        )
+        # Use the dilution factors and initial volume from before to get
+        # Concentration and initial mass in mg
+        # Fe mass (mg) = concentration (mg/L) / dilution_factor * initial_volume (L)
+        .with_columns(
+            Fe_mass_mg=pl.col("Fe_concentration_mgL")
+            / pl.col("dilution_factor")
+            * pl.col("initial_volume_mL")
+            / 1000
+        )
+        # Convert from iron mass to iron oxide mass
+        .with_columns(Fe3O4_mass_mg=pl.col("Fe_mass_mg") * FE_TO_FE3O4_RATIO)
+        .collect()
     )
 
     # Select final columns for display

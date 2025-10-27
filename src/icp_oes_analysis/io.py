@@ -17,6 +17,8 @@ def _get_column_names(data_file: Path, separator: str = "\t"):
         raw_ele_wave_data = fid.readline().strip().split(separator)
 
     element_wavelength = [ele_wave[:6] for ele_wave in raw_ele_wave_data]
+    element_wavelength.insert(0, "")
+    element_wavelength.insert(0, "")
 
     return [
         f"{dtype} {ele_wave}".strip()
@@ -56,5 +58,14 @@ def load_experiment(data_file: Path, config_file: Path) -> Experiment:
             .and_(pl.col("Sample").str.ends_with("DNU").not_())
         )
     )
+
+    for wavelength in [238, 239, 240, 259]:
+        raw_data = raw_data.with_columns(
+            (
+                pl.col(f"Raw.RSD Fe {wavelength}")
+                * pl.col(f"Raw.Average Fe {wavelength}")
+                / 100
+            ).alias(f"Raw.STD Fe {wavelength}")
+        )
 
     return Experiment(data_file=data_file, raw_data=raw_data, config=config)
