@@ -59,13 +59,4 @@ def load_experiment(data_file: Path, config_file: Path) -> Experiment:
         )
     )
 
-    for wavelength in [238, 239, 240, 259]:
-        raw_data = raw_data.with_columns(
-            (
-                pl.col(f"Raw.RSD Fe {wavelength}")
-                * pl.col(f"Raw.Average Fe {wavelength}")
-                / 100
-            ).alias(f"Raw.STD Fe {wavelength}")
-        )
-
     return Experiment(data_file=data_file, raw_data=raw_data, config=config)
