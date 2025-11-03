@@ -117,7 +117,7 @@ def _calculate_sample_masses(
     # Extract sample data (non-standards)
     samples = (
         exp.raw_data.filter(pl.col("Sample").str.starts_with("STD").not_())
-        .filter(pl.col("Sample").str.contains("blank").not_())
+        .filter(~pl.col("Sample").str.contains("blank"))
         .select(
             "Sample",
             Signal=pl.col(f"Raw.Average Fe {wavelength}"),
@@ -132,9 +132,11 @@ def _calculate_sample_masses(
             dilution_factor=pl.col("Sample").map_elements(
                 lambda x: get_dilution_factor(exp, x), return_dtype=pl.Float64
             ),
-            initial_volume_mL=pl.col("Sample").map_elements(
-                lambda x: get_initial_volume(exp, x), return_dtype=pl.Float64
-            ),
+            initial_volume_mL=pl.col("Sample")
+            .map_elements(
+                lambda x: get_dilution_factor(exp, x), return_dtype=pl.Float64
+            )
+            .alias("initial_volume_mL"),
         )
         # Use the dilution factors and initial volume from before to get
         # Concentration and initial mass in mg
@@ -143,11 +145,9 @@ def _calculate_sample_masses(
             Fe_mass_mg=pl.col("Fe_concentration_mgL")
             / pl.col("dilution_factor")
             * pl.col("initial_volume_mL")
-            / 1000
         )
         # Convert from iron mass to iron oxide mass
         .with_columns(Fe3O4_mass_mg=pl.col("Fe_mass_mg") * FE_TO_FE3O4_RATIO)
-        .with_columns(Fe3O4_mass_ug=pl.col("Fe3O4_mass_mg") * 1000)
         .collect()
     )
 
@@ -160,6 +160,5 @@ def _calculate_sample_masses(
             "dilution_factor",
             "Fe_mass_mg",
             "Fe3O4_mass_mg",
-            "Fe3O4_mass_ug",
         ]
     )
