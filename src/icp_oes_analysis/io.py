@@ -9,8 +9,8 @@ from icp_oes_analysis.core import Experiment
 def _get_column_names(data_file: Path, separator: str = "\t"):
     with open(data_file, "r") as fid:
         data_type = fid.readline().strip().split(separator)
-        data_type[0] = "Index"
-        data_type[1] = "Sample"
+        data_type.insert(0, "Sample")
+        data_type.insert(0, "Index")
 
         fid.readline()
 

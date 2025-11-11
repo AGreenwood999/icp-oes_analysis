@@ -76,9 +76,8 @@ def analyze(
 
     print("✓ Analysis complete!")
 
-    print("Beginning extension")
-
     if run_extension:
+        print("Beginning extension")
         extension(exp)
 
 
