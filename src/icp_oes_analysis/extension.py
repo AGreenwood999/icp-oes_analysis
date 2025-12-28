@@ -1,4 +1,5 @@
 from pathlib import Path
+import matplotlib.pyplot as plt
 import numpy as np
 import polars as pl
 from icp_oes_analysis.core import Experiment
@@ -77,23 +78,12 @@ class Plate:
 
 
 DATA_FILES: list[Path] = [
-    Path(
-        "/home/augustus/UNandUP/theralode-code/EXP_202511_FerrozineLimitOfQuantification/data/plate1_ferrozinelimitofquantification_20251106.csv"
-    ),
-    Path(
-        "/home/augustus/UNandUP/theralode-code/EXP_202511_FerrozineLimitOfQuantification/data/plate2_ferrozinelimitofquantification_20251106.csv"
-    ),
-    Path(
-        "/home/augustus/UNandUP/theralode-code/EXP_202511_FerrozineLimitOfQuantification/data/plate3_ferrozinelimitofquantification_20251106.csv"
-    ),
-    Path(
-        "/home/augustus/UNandUP/theralode-code/EXP_202511_FerrozineLimitOfQuantification/data/plate4_ferrozinelimitofquantification_20251106.csv"
-    ),
-    Path(
-        "/home/augustus/UNandUP/theralode-code/EXP_202511_FerrozineLimitOfQuantification/data/plate5_ferrozinelimitofquantification_20251106.csv"
-    ),
+    Path("./data/plate1_ferrozinelimitofquantification_20251106.csv"),
+    Path("./data/plate2_ferrozinelimitofquantification_20251106.csv"),
+    Path("./data/plate3_ferrozinelimitofquantification_20251106.csv"),
+    Path("./data/plate4_ferrozinelimitofquantification_20251106.csv"),
+    Path("./data/plate5_ferrozinelimitofquantification_20251106.csv"), # to get plot that excludes plate 5, comment this line
 ]
-
 
 def extension(exp: Experiment):
     data: list[Plate] = [Plate(file) for file in DATA_FILES]
@@ -107,10 +97,11 @@ def extension(exp: Experiment):
 
     detection_samples = np.array(
         [
-            np.concatenate([d.std_02_conc for d in data]),
-            np.concatenate([d.std_015_conc for d in data]),
-            np.concatenate([d.std_01_conc for d in data]),
             np.concatenate([d.std_005_conc for d in data]),
+            np.concatenate([d.std_01_conc for d in data]),
+            np.concatenate([d.std_015_conc for d in data]),
+            np.concatenate([d.std_02_conc for d in data]),
+            np.concatenate([d.std_04_conc for d in data]),
         ]
     )
 
@@ -123,31 +114,46 @@ def extension(exp: Experiment):
     print("detection SDS", detection_SDS)
     print(lod)
 
-    icp_oes_conc = exp.results.select("Fe_concentration_mgL").to_numpy().flatten()
-    ferrozine_conc = np.empty((5, 40), dtype=np.float64)
-    ferrozine_conc[0, :] = np.concatenate([d.std_04_conc for d in data])
-    ferrozine_conc[1, :] = np.concatenate([d.std_02_conc for d in data])
+    icp_oes_conc = exp.results.select("Fe_concentration_mgL").to_numpy().flatten()[::-1]
+    ferrozine_conc = np.empty((5, 32), dtype=np.float64)
+    ferrozine_conc[0, :] = np.concatenate([d.std_005_conc for d in data])
+    ferrozine_conc[1, :] = np.concatenate([d.std_01_conc for d in data])
     ferrozine_conc[2, :] = np.concatenate([d.std_015_conc for d in data])
-    ferrozine_conc[3, :] = np.concatenate([d.std_01_conc for d in data])
-    ferrozine_conc[4, :] = np.concatenate([d.std_005_conc for d in data])
+    ferrozine_conc[3, :] = np.concatenate([d.std_02_conc for d in data])
+    ferrozine_conc[4, :] = np.concatenate([d.std_04_conc for d in data])
 
-    loq = [
-        (np.abs(np.mean(ferr) - icp) + 2 * np.std(ferr)) / np.mean(ferr)
-        for (ferr, icp) in zip(ferrozine_conc, icp_oes_conc)
-    ]
+    loq = np.array(
+        [
+            (np.abs(np.mean(ferr) - icp) + 2 * np.std(ferr)) / np.mean(ferr)
+            for (ferr, icp) in zip(ferrozine_conc, icp_oes_conc)
+        ]
+    )
 
-    print(
+    bias_error = np.array(
         [
             (np.abs(np.mean(ferr) - icp)) / np.mean(ferr)
             for (ferr, icp) in zip(ferrozine_conc, icp_oes_conc)
         ]
     )
 
-    print(
+    std_error = np.array(
         [
             (2 * np.std(ferr)) / np.mean(ferr)
             for (ferr, icp) in zip(ferrozine_conc, icp_oes_conc)
         ]
     )
+
+    fig, ax = plt.subplots(1, 1)
+
+    x = np.array([1, 2, 3, 4, 5], dtype=np.float64)
+    ax.bar(x, loq * 100, label=r"2$\cdot\sigma$")
+    ax.bar(x, bias_error * 100, label="Bias")
+    ax.set_xlabel("Concentration ($mg_{Fe}$/L)", fontsize=12)
+    ax.set_ylabel("Total error (%)", fontsize=12)
+    ax.legend(fontsize=12)
+
+    ax.set_xticks(x, ["0.125", "0.25", "0.375", "0.5", "1.0"])
+
+    plt.show()
 
     print(loq)
